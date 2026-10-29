@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isEmailAdmin() {
+      return isSignedIn() && request.auth.token.email == 'rizkafajriyah3@gmail.com' && request.auth.token.email_verified == true;
+    }
+
+    // Default deny: All paths blocked by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Test connection check
+    match /test/{testId} {
+      allow read: if true;
+    }
+
+    // User Progress: User document ID is the user's UID ({userId})
+    // Hanya user pemilik yang bisa membaca, membuat, dan memperbarui datanya sendiri
+    match /user_progress/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isEmailAdmin());
+      allow list: if isEmailAdmin();
+      allow create: if isValidId(userId) && isOwner(userId) && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isValidId(userId) && (isOwner(userId) || isEmailAdmin()) && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isValidId(userId) && (isOwner(userId) || isEmailAdmin());
+    }
+
+    // User Mufrodat (Kartu Kosakata Pribadi per Pengguna)
+    // Setiap user hanya bisa membaca (get/list) dan menulis (create/update/delete) mufrodat miliknya sendiri
+    match /user_mufrodat/{vocabId} {
+      allow get: if isValidId(vocabId) && isSignedIn() && (resource.data.ownerId == request.auth.uid || isEmailAdmin());
+      allow list: if isSignedIn() && (resource.data.ownerId == request.auth.uid || isEmailAdmin());
+      allow create: if isValidId(vocabId) && isSignedIn() && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.arabic is string && request.resource.data.arabic.size() <= 200
+        && request.resource.data.indonesian is string && request.resource.data.indonesian.size() <= 300;
+      allow update: if isValidId(vocabId) && isSignedIn() && (resource.data.ownerId == request.auth.uid || isEmailAdmin())
+        && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if isValidId(vocabId) && isSignedIn() && (resource.data.ownerId == request.auth.uid || isEmailAdmin());
+    }
+
+    // Koleksi pribadi user generik: /users/{userId} beserta seluruh sub-koleksinya
+    match /users/{userId}/{document=**} {
+      allow read, write: if isValidId(userId) && (isOwner(userId) || isEmailAdmin());
+    }
+
+    // Modul Pelajaran Umum: Dapat dibaca oleh semua user terdaftar, hanya admin yang dapat mengubah
+    match /arabic_lessons/{lessonId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isEmailAdmin() || (isSignedIn() && request.resource.data.ownerId == request.auth.uid);
+    }
+  }
+}

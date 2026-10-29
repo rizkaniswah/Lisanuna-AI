@@ -1,0 +1,8 @@
+{
+  "name": "Lisanuna AI - Pembelajaran Bahasa Arab Cerdas",
+  "description": "Aplikasi pembelajaran bahasa Arab interaktif dengan asisten AI Gemini, materi Mufrodat, Nahwu & Shorof, Hiwar percakapan, latihan kuis, dan data progres per pengguna di Firestore.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

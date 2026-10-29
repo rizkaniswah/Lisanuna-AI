@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "ArabicLesson": {
+      "title": "ArabicLesson",
+      "description": "Kurikulum modul materi bahasa Arab (Mufrodat, Nahwu-Shorof, Hiwar, Qawaid)",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200, "description": "Judul modul pelajaran" },
+        "level": { "type": "string", "enum": ["pemula", "menengah", "mahir"], "description": "Tingkat kemahiran" },
+        "category": { "type": "string", "enum": ["mufrodat", "nahwu_shorof", "hiwar", "tashrif"], "description": "Kategori kebahasaan" },
+        "description": { "type": "string", "maxLength": 1000, "description": "Ringkasan materi" },
+        "ownerId": { "type": "string", "maxLength": 128, "description": "UID pembuat/admin" },
+        "createdAt": { "type": "string", "description": "Waktu pembuatan" }
+      },
+      "required": ["title", "level", "category", "ownerId"]
+    },
+    "UserProgress": {
+      "title": "UserProgress",
+      "description": "Catatan progres belajar per pengguna",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "maxLength": 128, "description": "UID pengguna" },
+        "ownerEmail": { "type": "string", "maxLength": 160, "description": "Email/username pengguna" },
+        "xp": { "type": "number", "description": "Poin pengalaman belajar" },
+        "streakDays": { "type": "number", "description": "Jumlah hari berturut-turut belajar" },
+        "lastStudiedAt": { "type": "string", "description": "Waktu terakhir belajar" }
+      },
+      "required": ["ownerId"]
+    },
+    "UserMufrodat": {
+      "title": "UserMufrodat",
+      "description": "Kosakata pribadi yang disimpan/dihafal oleh user",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "maxLength": 128, "description": "UID pemilik kosakata" },
+        "arabic": { "type": "string", "maxLength": 200, "description": "Teks Arab dengan harakat" },
+        "transliteration": { "type": "string", "maxLength": 200, "description": "Pelafalan latin" },
+        "indonesian": { "type": "string", "maxLength": 300, "description": "Arti dalam bahasa Indonesia" },
+        "category": { "type": "string", "maxLength": 60, "description": "Topik kosakata" },
+        "status": { "type": "string", "enum": ["hafalan", "dikuasai"], "description": "Status hafalan" },
+        "createdAt": { "type": "string", "description": "Waktu penambahan" }
+      },
+      "required": ["ownerId", "arabic", "indonesian", "status"]
+    }
+  },
+  "firestore": {
+    "/arabic_lessons/{lessonId}": {
+      "schema": "ArabicLesson",
+      "description": "Koleksi modul materi pembelajaran bahasa Arab global"
+    },
+    "/user_progress/{progressId}": {
+      "schema": "UserProgress",
+      "description": "Data statistik pencapaian per pengguna di Firestore"
+    },
+    "/user_mufrodat/{vocabId}": {
+      "schema": "UserMufrodat",
+      "description": "Bank kosakata dan kartu hafalan per pengguna di Firestore"
+    }
+  }
+}
